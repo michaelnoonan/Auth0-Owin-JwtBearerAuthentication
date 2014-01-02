@@ -58,19 +58,24 @@ namespace Auth0.Owin.Jwt
             token = null;
             string[] authzHeaders;
 
-            if (!request.Headers.TryGetValue("Authorization", out authzHeaders) || authzHeaders.Count() > 1)
+            if (request.Headers.TryGetValue("Authorization", out authzHeaders) && authzHeaders.Count() == 1)
             {
-                // Fail if no Authorization header or more than one Authorization headers  
-                // are found in the HTTP request  
-                return false;
+                // Remove the bearer token scheme prefix and return the rest as ACS token  
+                var bearerToken = authzHeaders.ElementAt(0);
+                const string bearerPrefix = "Bearer ";
+                token = bearerToken.StartsWith(bearerPrefix) ? bearerToken.Substring(bearerPrefix.Length) : bearerToken;
+                return true;
             }
 
-            // Remove the bearer token scheme prefix and return the rest as ACS token  
-            var bearerToken = authzHeaders.ElementAt(0);
-            const string bearerPrefix = "Bearer ";
-            token = bearerToken.StartsWith(bearerPrefix) ? bearerToken.Substring(bearerPrefix.Length) : bearerToken;
+            if (request.Query.Count(q => q.Key == "id_token") == 1)
+            {
+                token = request.Query.Single(q => q.Key == "id_token").Value.First();
+                return true;
+            }
 
-            return true;
+            // Fail if no Authorization header or more than one Authorization headers  
+            // are found in the HTTP request  
+            return false;
         }
     }
 }
