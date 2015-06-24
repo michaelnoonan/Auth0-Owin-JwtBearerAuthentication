@@ -10,14 +10,14 @@ namespace Auth0.Owin.Jwt
 {
     public class Auth0JwtBearerAuthenticationHandler : AuthenticationHandler<Auth0JwtBearerAuthenticationOptions>
     {
-        readonly ILogger logger;
+        readonly ILogger _logger;
 
         public Auth0JwtBearerAuthenticationHandler(ILogger logger)
         {
-            this.logger = logger;
+            _logger = logger;
         }
 
-        protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()
+        protected override Task<AuthenticationTicket> AuthenticateCoreAsync()
         {
             string token;
 
@@ -34,20 +34,22 @@ namespace Auth0.Owin.Jwt
                         checkExpiration: true,
                         issuer: Options.Issuer);
 
-                    return new AuthenticationTicket(claimsIdentityFromToken, new AuthenticationProperties());
-
+                    return Task.FromResult(new AuthenticationTicket(claimsIdentityFromToken, new AuthenticationProperties()));
                 }
                 catch (JWT.SignatureVerificationException ex)
                 {
-                    return null;
+                    _logger.WriteError("SignatureVerificationException", ex);
+                    return Task.FromResult((AuthenticationTicket)null);
                 }
                 catch (JsonWebToken.TokenValidationException ex)
                 {
-                    return null;
+                    _logger.WriteError("TokenValidationException", ex);
+                    return Task.FromResult((AuthenticationTicket)null);
                 }
                 catch (Exception ex)
                 {
-                    return null;
+                    _logger.WriteError("Exception", ex);
+                    return Task.FromResult((AuthenticationTicket)null);
                 }
             }
             return null;
