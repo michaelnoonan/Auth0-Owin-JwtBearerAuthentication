@@ -39,22 +39,22 @@ namespace Auth0.Owin.Jwt
                 {
                     if (_logger != null)
                         _logger.WriteError("SignatureVerificationException", ex);
-                    return Task.FromResult((AuthenticationTicket)null);
+                    return Task.FromResult<AuthenticationTicket>(null);
                 }
                 catch (JsonWebToken.TokenValidationException ex)
                 {
                     if (_logger != null)
                         _logger.WriteError("TokenValidationException", ex);
-                    return Task.FromResult((AuthenticationTicket)null);
+                    return Task.FromResult<AuthenticationTicket>(null);
                 }
                 catch (Exception ex)
                 {
                     if (_logger != null)
-                        _logger.WriteError("Exception", ex);
-                    return Task.FromResult((AuthenticationTicket)null);
+                        _logger.WriteError("Exception", ex); 
+                    return Task.FromResult<AuthenticationTicket>(null);
                 }
             }
-            return null;
+            return Task.FromResult<AuthenticationTicket>(null);
         }
 
         private static bool TryRetrieveToken(IOwinRequest request, out string token)
