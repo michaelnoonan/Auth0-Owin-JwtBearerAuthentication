@@ -20,7 +20,6 @@ namespace Auth0.Owin.Jwt
         protected override Task<AuthenticationTicket> AuthenticateCoreAsync()
         {
             string token;
-
             if (TryRetrieveToken(Request, out token))
             {
                 try
@@ -38,21 +37,24 @@ namespace Auth0.Owin.Jwt
                 }
                 catch (JWT.SignatureVerificationException ex)
                 {
-                    _logger.WriteError("SignatureVerificationException", ex);
-                    return Task.FromResult((AuthenticationTicket)null);
+                    if (_logger != null)
+                        _logger.WriteError("SignatureVerificationException", ex);
+                    return Task.FromResult<AuthenticationTicket>(null);
                 }
                 catch (JsonWebToken.TokenValidationException ex)
                 {
-                    _logger.WriteError("TokenValidationException", ex);
-                    return Task.FromResult((AuthenticationTicket)null);
+                    if (_logger != null)
+                        _logger.WriteError("TokenValidationException", ex);
+                    return Task.FromResult<AuthenticationTicket>(null);
                 }
                 catch (Exception ex)
                 {
-                    _logger.WriteError("Exception", ex);
-                    return Task.FromResult((AuthenticationTicket)null);
+                    if (_logger != null)
+                        _logger.WriteError("Exception", ex); 
+                    return Task.FromResult<AuthenticationTicket>(null);
                 }
             }
-            return null;
+            return Task.FromResult<AuthenticationTicket>(null);
         }
 
         private static bool TryRetrieveToken(IOwinRequest request, out string token)
